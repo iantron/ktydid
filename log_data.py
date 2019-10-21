@@ -15,10 +15,12 @@ import time
 # Parse Arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("outfile", help="Output filename")
+parser.add_argument("configfile", help="Config filename")
 parser.add_argument("-i", "--interval", help="Interval", type=float, default=1.0)
 args = parser.parse_args()
 
 outfilename = args.outfile
+config_filename = args.configfile
 interval = args.interval
 
 # Get Connection
@@ -31,7 +33,7 @@ vessel = space_center.active_vessel
 flight = vessel.flight(vessel.orbit.body.reference_frame)
 orbit = vessel.orbit
 
-# Define logging items
+# Define/load logging items
 log_items = {
 	'space_center':['ui'],
 	'flight':['mean_altitude'],
