@@ -2,8 +2,8 @@ import math
 import time
 import krpc
 
-turn_start_altitude = 1000
-turn_end_altitude = 45000
+turn_start_altitude = 4000
+turn_end_altitude = 70000
 target_altitude = 80000
 
 conn = krpc.connect(name='launch_into_orbit')
@@ -47,6 +47,7 @@ while True:
         new_turn_angle = frac * 90
         if abs(new_turn_angle - turn_angle) > 0.5:
             turn_angle = new_turn_angle
+            print(turn_angle)
             vessel.auto_pilot.target_pitch_and_heading(90-turn_angle, 90)
 
     # Separate SRBs when finished

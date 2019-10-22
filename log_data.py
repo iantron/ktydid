@@ -7,6 +7,7 @@
 #    https://gist.github.com/fat-lobyte/4326afa551fa04dd028f
 
 import argparse
+import csv
 import krpc
 import numpy as np
 import sys
@@ -35,10 +36,11 @@ orbit = vessel.orbit
 
 # Define/load logging items
 log_items = {
-	'space_center':['ut'],
-	'flight':['mean_altitude'],
-	'orbit':['apoapsis_altitude']
-	}
+    'space_center':['ut'],
+    'vessel':['thrust'],
+    'flight':['mean_altitude', 'speed', 'dynamic_pressure'],
+    'orbit':['apoapsis_altitude', 'periapsis_altitude']
+    }
 
 # Set up streams for telemetry
 categories = ['space_center', 'flight', 'orbit']
@@ -46,24 +48,25 @@ stream_list = []
 
 print("Logging items:")
 for category in categories:
-	for log_name in log_items[category]:
-		print("...", category, log_name)
-		stream_list += conn.add_stream(getattr, exec(category), log_name)
+    for log_name in log_items[category]:
+        print("...", category, log_name)
+        stream_list += [conn.add_stream(getattr, globals()[category], log_name)]
 
 # Set up output file and log
 print("Logging CSV data to: ", outfilename)
 with open(outfilename, 'w') as out_file:
-	csv_writer = csv.writer(out_file, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    csv_writer = csv.writer(out_file, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     header = [item for category in log_items for item in log_items[category]]
-	csv_writer.writerow(header)
-	
-	# Main Logging Loop
-	print("Starting log. Please stop it by pressing Control-C")
-	try:
-		while True:
-			line = [stream() for stream in stream_list]
-			csv_writer.writerow(line)
-			sys.stdout.flush()
-			time.sleep(interval)
-	except KeyboardInterrupt as e:
-		print("\nThanks for logging. Bye!")
+    csv_writer.writerow(header)
+    out_file.flush()
+
+    # Main Logging Loop
+    print("Starting log. Please stop it by pressing Control-C")
+    try:
+        while True:
+            line = [stream() for stream in stream_list]
+            csv_writer.writerow(line)
+            out_file.flush()
+            time.sleep(interval)
+    except KeyboardInterrupt as e:
+        print("\nThanks for logging. Bye!")
