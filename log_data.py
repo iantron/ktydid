@@ -35,7 +35,7 @@ orbit = vessel.orbit
 
 # Define/load logging items
 log_items = {
-	'space_center':['ui'],
+	'space_center':['ut'],
 	'flight':['mean_altitude'],
 	'orbit':['apoapsis_altitude']
 	}
