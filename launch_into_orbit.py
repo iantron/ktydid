@@ -1,8 +1,15 @@
+#!/usr/bin/env python3
+
+# A launch script for kRPC. Initially this has very few deviations from the original.
+
+# Ian Dahlke, 2019
+#    credit kRPC launch tutorial
+
 import math
 import time
 import krpc
 
-turn_start_altitude = 4000
+turn_start_altitude = 1000
 turn_end_altitude = 70000
 target_altitude = 80000
 
@@ -103,7 +110,7 @@ vessel.auto_pilot.wait()
 # Wait until burn
 print('Waiting until circularization burn')
 burn_ut = ut() + vessel.orbit.time_to_apoapsis - (burn_time/2.)
-lead_time = 5
+# lead_time = 5
 # conn.space_center.warp_to(burn_ut - lead_time)
 
 # Execute burn
@@ -113,12 +120,13 @@ while time_to_apoapsis() - (burn_time/2.) > 0:
     pass
 print('Executing burn')
 vessel.control.throttle = 1.0
-time.sleep(burn_time - 0.1)
-print('Fine tuning')
-vessel.control.throttle = 0.05
-remaining_burn = conn.add_stream(node.remaining_burn_vector, node.reference_frame)
-while remaining_burn()[1] > 0:
-    pass
+time.sleep(burn_time)
+# time.sleep(burn_time - 0.1)
+# print('Fine tuning')
+# vessel.control.throttle = 0.05
+# remaining_burn = conn.add_stream(node.remaining_burn_vector, node.reference_frame)
+# while remaining_burn()[1] > 0:
+    # pass
 vessel.control.throttle = 0.0
 node.remove()
 

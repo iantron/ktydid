@@ -43,11 +43,10 @@ log_items = {
     }
 
 # Set up streams for telemetry
-categories = ['space_center', 'flight', 'orbit']
 stream_list = []
 
 print("Logging items:")
-for category in categories:
+for category in log_items:
     for log_name in log_items[category]:
         print("...", category, log_name)
         stream_list += [conn.add_stream(getattr, globals()[category], log_name)]
