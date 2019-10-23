@@ -33,12 +33,13 @@ space_center = conn.space_center
 vessel = space_center.active_vessel
 flight = vessel.flight(vessel.orbit.body.reference_frame)
 orbit = vessel.orbit
+auto_pilot = vessel.auto_pilot
 
 # Define/load logging items
 log_items = {
     'space_center':['ut'],
-    'vessel':['thrust'],
-    'flight':['mean_altitude', 'speed', 'dynamic_pressure'],
+    'vessel':['met', 'thrust', 'mass'],
+    'flight':['mean_altitude', 'speed', 'dynamic_pressure', 'lift', 'drag', 'angle_of_attack', 'pitch', 'heading'],
     'orbit':['apoapsis_altitude', 'periapsis_altitude']
     }
 
