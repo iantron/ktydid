@@ -15,7 +15,7 @@ df1.plot(ax=axes[0,0])
 df2 = df.loc[:,['mean_altitude']]
 df2.plot(ax=axes[0,1])
 
-df3 = df.loc[:,['angle_of_attack', 'pitch', 'heading']]
+df3 = df.loc[:,['angle_of_attack', 'pitch']]
 df3.plot(ax=axes[1,0])
 
 df4 = df.loc[:,['apoapsis_altitude', 'periapsis_altitude']]

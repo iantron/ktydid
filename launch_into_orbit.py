@@ -9,10 +9,8 @@ import math
 import time
 import krpc
 
-turn_start_altitude = 1000
-turn_end_altitude = 70000
-target_altitude = 80000
-
+# Get Connection
+print('Setting up connection')
 conn = krpc.connect(name='launch_into_orbit')
 vessel = conn.space_center.active_vessel
 
@@ -23,27 +21,37 @@ apoapsis = conn.add_stream(getattr, vessel.orbit, 'apoapsis_altitude')
 stage_2_resources = vessel.resources_in_decouple_stage(stage=2, cumulative=False)
 srb_fuel = conn.add_stream(stage_2_resources.amount, 'SolidFuel')
 
-# Pre-launch setup
+# Configure Ascent
+turn_start_altitude = 500
+turn_end_altitude = 70000
+target_altitude = 80000
+
+# Configure Vessel
 vessel.control.sas = False
 vessel.control.rcs = False
 vessel.control.throttle = 1.0
 
 # Countdown...
-print('3...')
-time.sleep(1)
-print('2...')
-time.sleep(1)
-print('1...')
-time.sleep(1)
-print('Launch!')
+duration = 10
+count = list(range(1,duration+1))
+count.reverse()
+for i in count:
+	print(i, "...")
+	time.sleep(1)
+print("Launch!")
 
-# Activate the first stage
+# Launch
 vessel.control.activate_next_stage()
 vessel.auto_pilot.engage()
 vessel.auto_pilot.target_pitch_and_heading(90, 90)
+# vessel.auto_pilot.target_roll(180)
+# vessel.auto_pilot.roll_threshold = 1
+# vessel.auto_pilot.stopping_time = (1,1,1)
 
 # Main ascent loop
 srbs_separated = False
+turn_angle_start = 7
+turn_angle_end = 90
 turn_angle = 0
 while True:
 
@@ -51,7 +59,7 @@ while True:
     if altitude() > turn_start_altitude and altitude() < turn_end_altitude:
         frac = ((altitude() - turn_start_altitude) /
                 (turn_end_altitude - turn_start_altitude))
-        new_turn_angle = frac * 90
+        new_turn_angle = frac * (turn_angle_end - turn_angle_start) + turn_angle_start
         if abs(new_turn_angle - turn_angle) > 0.5:
             turn_angle = new_turn_angle
             print(turn_angle)
@@ -73,13 +81,18 @@ while True:
 vessel.control.throttle = 0.25
 while apoapsis() < target_altitude:
     pass
-print('Target apoapsis reached')
 vessel.control.throttle = 0.0
+print('Target apoapsis reached')
 
 # Wait until out of atmosphere
 print('Coasting out of atmosphere')
+
 while altitude() < 70500:
     pass
+
+# Remove thrust limit
+for engine in vessel.parts.engines:
+	engine.thrust_limit = 1
 
 # Plan circularization burn (using vis-viva equation)
 print('Planning circularization burn')
@@ -103,13 +116,15 @@ burn_time = (m0 - m1) / flow_rate
 
 # Orientate ship
 print('Orientating ship for circularization burn')
-vessel.auto_pilot.reference_frame = node.reference_frame
+vessel.auto_pilot.disengage()
+vessel.auto_pilot.engage()
+vessel.auto_pilot.reference_frame = node.orbital_reference_frame
 vessel.auto_pilot.target_direction = (0, 1, 0)
 vessel.auto_pilot.wait()
 
 # Wait until burn
 print('Waiting until circularization burn')
-burn_ut = ut() + vessel.orbit.time_to_apoapsis - (burn_time/2.)
+# burn_ut = ut() + vessel.orbit.time_to_apoapsis - (burn_time/2.)
 # lead_time = 5
 # conn.space_center.warp_to(burn_ut - lead_time)
 
