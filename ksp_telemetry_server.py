@@ -4,69 +4,67 @@
 
 # Ian Dahlke, 2020
 
-# import argparse
-import pandas as pd
-import numpy as np
-import time
+import argparse
 import datetime
-try:
-    import krpc
-except ImportError:
-    krpc_exists = False
-    pass
+import krpc
+import krpc_logger
+import numpy as np
+import pandas as pd
 
-from bokeh.layouts import row, column, gridplot
+from bokeh.layouts import row, column, gridplot, layout
 from bokeh.plotting import curdoc, figure
 from bokeh.models import ColumnDataSource
 from bokeh.driving import count
+
+# Parse Arguments
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-s",
+    "--simulate_krpc",
+    help="simulate connection KSP/krpc",
+    type=bool,
+    default=False
+)
+parser.add_argument(
+    "-p",
+    "--period",
+    help="Data polling period in seconds",
+    type=float,
+    default=1.0
+)
+args = parser.parse_args()
+
+simulate_krpc = args.simulate_krpc
+period = args.period
 
 #########################
 # Set Up KRPC streaming #
 #########################
 # Define/load logging items
 # This may only support property access right now
-# Also it'll put list items directly into the dataframe rather than breaking them up.
-log_items = {
-    'space_center':['ut'],
-    'vessel':['met', 'thrust', 'mass'],
-    'flight':['mean_altitude', 'speed', 'dynamic_pressure', 'lift', 'drag', 'angle_of_attack', 'pitch', 'heading'],
-    'orbit':['apoapsis_altitude', 'periapsis_altitude']
-    }
-columns = ["{}_{}".format(category, item) for category in log_items for item in log_items[category]]
 
 # Set up krpc connection and objects
-if krpc_exists:
+if simulate_krpc:
+    print("Simulating krpc connection")
+    conn = None
+    space_center = None
+    vessel = None
+    flight = None
+else:
     print("Setting up krpc connection")
     conn = krpc.connect(name='ksp_telemetry_server')
-
     space_center = conn.space_center
     vessel = space_center.active_vessel
     flight = vessel.flight(vessel.orbit.body.reference_frame)
-    orbit = vessel.orbit
-#     auto_pilot = vessel.auto_pilot
 
-    # Set up streams for telemetry
-    print("Creating data streams...")
-    stream_list = []
-    for category in log_items:
-        for log_name in log_items[category]:
-            print("...", category, log_name)
-            stream_list += [conn.add_stream(getattr, globals()[category], log_name)]
-else:
-    # set up fake data
-    stream_list = [ datetime.datetime.now ]
-    stream_list += [ lambda: tuple(np.random.ranf(3)) ]
-    stream_list += [ np.random.ranf for i in range(len(columns)-2) ]
+sc_logger = krpc_logger.LoggableSpaceCenter(conn, space_center, "sc")
+# vessel_logger = krpc_logger.LoggableVessel(conn, vessel, "active_vessel")
+flight_logger = krpc_logger.LoggableFlight(conn, flight, "flight")
+loggable_list = [sc_logger, flight_logger]
 
 def update_streams():
-    line = [stream() for stream in stream_list]
-    new_columns = columns.copy()
-    for field_name, value in zip(columns, line):
-        if type(value) is tuple:
-            new_columns += ['{}_{}'.format(field_name, i) for i in range(len(value))]
-            line += [sub_value for sub_value in value]
-        
-    df_new = pd.DataFrame([line], columns=new_columns)
+    dfs_new = [loggable.update() for loggable in loggable_list]
+    df_new = pd.concat(dfs_new, axis=1)
     return(df_new)
 
 ######################
@@ -74,23 +72,32 @@ def update_streams():
 ######################
 df = update_streams()
 source = ColumnDataSource(df)
-print(df.columns)
+tools = "xpan,xwheel_zoom,xbox_zoom,reset"
 
-p = figure(plot_height=500, tools="xpan,xwheel_zoom,xbox_zoom,reset", x_axis_type="datetime")
+p = figure(tools=tools, x_axis_type="datetime")
 p.x_range.follow = "end"
-# p.x_range.follow_interval = 100
 p.x_range.range_padding = 0
-p.line(x='space_center_ut', y='flight_pitch', source=source)
+p.toolbar.logo = None
+p.line(x='sc_ut', y='flight_pitch', line_color='blue', source=source)
+p.line(x='sc_ut', y='flight_heading', line_color='red', source = source)
+p.line(x='sc_ut', y='flight_roll', line_color='green', source = source)
 
-p2 = figure(plot_height=500, tools="xpan,xwheel_zoom,xbox_zoom,reset", x_axis_type="datetime")
-p2.x_range.follow = "end"
-# p2.x_range.follow_interval = 100
-p2.x_range.range_padding = 0
-p2.line(x='space_center_ut', y='flight_heading', source=source)
+p2 = figure(tools=tools, x_axis_type='mercator', y_axis_type='mercator')
+p2.xaxis.axis_label = "Longitude"
+p2.yaxis.axis_label = "Latitude"
+p2.toolbar.logo = None
+p2.line(x='flight_longitude', y='flight_latitude', source=source)
 
 def update():
     df_new = update_streams()
     source.stream(df_new, 300)
 
-curdoc().add_root(column(p, p2))
-curdoc().add_periodic_callback(update, 500)
+curdoc().add_root(
+    layout(
+        [
+            [p, p2]
+        ],
+        sizing_mode="stretch_both",
+    )
+)
+curdoc().add_periodic_callback(update, period*1000)
