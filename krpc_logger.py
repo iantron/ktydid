@@ -39,7 +39,7 @@ class Loggable:
             else:
                 column_labels = [ base_label ]
                 self.stream_list.append(lambda: [stream()])
-            
+                
             self.column_labels += column_labels
     
     def update(self):
@@ -122,7 +122,7 @@ class LoggableVessel(Loggable):
         self.attribute_config = {
             'met': {
                 'sim_fun': datetime.datetime.now,
-                'stream_params': stream_params_attribute
+                'stream_params': self.stream_params_attribute
             },
             'mass': self.attribute_template_ranf(1),
             'dry_mass': self.attribute_template_ranf(1),
@@ -132,7 +132,7 @@ class LoggableVessel(Loggable):
             'max_vacuum_thrust': self.attribute_template_ranf(1),
             'specific_impulse': self.attribute_template_ranf(1),
             'vacuum_specific_impulse': self.attribute_template_ranf(1),
-            'moment_of_inertia': self.ttribute_template_ranf(1),
+            'moment_of_inertia': self.attribute_template_ranf(1),
             'inertia_tensor': self.attribute_template_ranf(1),
             
         }
@@ -149,7 +149,7 @@ class LoggableAutopilot(Loggable):
             'target_heading': self.attribute_template_ranf(1),
             'target_roll': self.attribute_template_ranf(1),
             'target_direction': self.attribute_template_ranf(3),
-            'roll_threshold': self.ttribute_template_ranf(1),
+            'roll_threshold': self.attribute_template_ranf(1),
             'stopping_time': self.attribute_template_ranf(3),
             'deceleration_time': self.attribute_template_ranf(3),
             'attenuation_angle': self.attribute_template_ranf(3),
@@ -172,7 +172,7 @@ class LoggableOrbit(Loggable):
             'semi_minor_axis': self.attribute_template_ranf(1),
             'radius': self.attribute_template_ranf(1),
             'speed': self.attribute_template_ranf(1),
-            'period': self.ttribute_template_ranf(1),
+            'period': self.attribute_template_ranf(1),
             'time_to_apoapsis': self.attribute_template_ranf(1),
             'time_to_periapsis': self.attribute_template_ranf(1),
             'eccentricity': self.attribute_template_ranf(1),
@@ -199,7 +199,7 @@ class LoggableControl(Loggable):
             'up': self.attribute_template_ranf(1),
             'right': self.attribute_template_ranf(1),
             'wheel_throttle': self.attribute_template_ranf(1),
-            'wheel_steering': self.ttribute_template_ranf(1),
+            'wheel_steering': self.attribute_template_ranf(1),
             'current_stage': self.attribute_template_ranf(1),
         }
         Loggable.__init__(self, connection, loggable_object, name)
