@@ -60,7 +60,7 @@ else:
     vessel = space_center.active_vessel
     orbit = vessel.orbit
     flight = vessel.flight(orbit.body.reference_frame)
-    autopilot = vessel.autopilot
+    autopilot = vessel.auto_pilot
 
 sc_logger = krpc_logger.LoggableSpaceCenter(conn, space_center, "sc")
 vessel_logger = krpc_logger.LoggableVessel(conn, vessel, "vessel")
@@ -73,7 +73,7 @@ def update_streams():
     dfs_new = [loggable.update() for loggable in loggable_list]
     df_new = pd.concat(dfs_new, axis=1)
 #     print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"])
-    for label, stream in zip(autopilot_logger.column_labels, autopilot_logger.stream_list): print(label, stream())
+    # for label, stream in zip(autopilot_logger.column_labels, autopilot_logger.stream_list): print(label, stream())
     return(df_new)
 
 ######################
@@ -111,9 +111,9 @@ p3.line(x='sc_ut', y='orbit_apoapsis', source=source, line_color='blue', legend_
 # p3.line(x='sc_ut', y='autopilot_target_roll', source=source, line_color='green', legend_label="Roll Target")
 # p3.legend.location = "top_left"
 p3.legend.click_policy="hide"
-print(df["autopilot_pitch_error"])
-print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"])
-print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"]())
+# print(df["autopilot_pitch_error"])
+# print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"])
+# print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"]())
 
 
 def update():

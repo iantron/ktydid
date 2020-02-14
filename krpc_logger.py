@@ -30,7 +30,7 @@ class Loggable:
             if self.connection is None:
                 stream = config['sim_fun']
             else:
-                stream = self.connection.add_stream(**(config['stream_params'](self.loggable_object, attribute)))
+                stream = self.connection.add_stream(*(config['stream_params'](self.loggable_object, attribute)))
             example_return = stream()
             base_label = "{}_{}".format(self.name, attribute)
             if type(example_return) is tuple:
@@ -100,7 +100,7 @@ class LoggableFlight(Loggable):
             'drag': self.attribute_template_ranf(3),
             'speed_of_sound': self.attribute_template_ranf(1),
             'mach': self.attribute_template_ranf(1),
-            'reynolds_number': self.attribute_template_ranf(1),
+            # 'reynolds_number': self.attribute_template_ranf(1), # requires FAR
             'true_air_speed': self.attribute_template_ranf(1),
             'equivalent_air_speed': self.attribute_template_ranf(1),
             'terminal_velocity': self.attribute_template_ranf(1),
@@ -108,11 +108,11 @@ class LoggableFlight(Loggable):
             'sideslip_angle': self.attribute_template_ranf(1),
             'total_air_temperature': self.attribute_template_ranf(1),
             'static_air_temperature': self.attribute_template_ranf(1),
-            'stall_fraction': self.attribute_template_ranf(1),
-            'drag_coefficient': self.attribute_template_ranf(1),
-            'lift_coefficient': self.attribute_template_ranf(1),
-            'ballistic_coefficient': self.attribute_template_ranf(1),
-            'thrust_specific_fuel_consumption': self.attribute_template_ranf(1),
+            # 'stall_fraction': self.attribute_template_ranf(1), # requires FAR
+            # 'drag_coefficient': self.attribute_template_ranf(1), # requires FAR
+            # 'lift_coefficient': self.attribute_template_ranf(1), # requires FAR
+            # 'ballistic_coefficient': self.attribute_template_ranf(1), # requires FAR
+            # 'thrust_specific_fuel_consumption': self.attribute_template_ranf(1), # requires FAR
         }
         Loggable.__init__(self, connection, loggable_object, name)
 
