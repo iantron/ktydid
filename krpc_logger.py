@@ -34,11 +34,14 @@ class Loggable:
             example_return = stream()
             base_label = "{}_{}".format(self.name, attribute)
             if type(example_return) is tuple:
+                # print("Tuple:", attribute, example_return)
                 column_labels = ["{}_{}".format(base_label, i) for i in range(len(example_return))]
                 self.stream_list.append(stream)
             else:
+                # print("Float:", attribute, example_return)
                 column_labels = [ base_label ]
-                self.stream_list.append(lambda: [stream()])
+                enlist = lambda x: lambda: [x()]
+                self.stream_list.append(enlist(stream))
                 
             self.column_labels += column_labels
     

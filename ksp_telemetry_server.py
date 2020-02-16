@@ -74,6 +74,7 @@ def update_streams():
     df_new = pd.concat(dfs_new, axis=1)
 #     print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"])
     # for label, stream in zip(autopilot_logger.column_labels, autopilot_logger.stream_list): print(label, stream())
+    # print(df_new.autopilot_pitch_error.values, df_new.flight_pitch.values)
     return(df_new)
 
 ######################
@@ -83,38 +84,35 @@ df = update_streams()
 source = ColumnDataSource(df)
 tools = "xpan,xwheel_zoom,xbox_zoom,reset"
 
-# p = figure(tools=tools, x_axis_type='datetime')
-# p.xaxis.axis_label = "Time"
-# p.x_range.follow = "end"
-# p.x_range.range_padding = 0
-# p.toolbar.logo = None
-# p.line(x='sc_ut', y='flight_pitch', line_color='blue', source=source)
-# p.line(x='sc_ut', y='flight_heading', line_color='red', source = source)
-# p.line(x='sc_ut', y='flight_roll', line_color='green', source = source)
+p = figure(tools=tools, x_axis_type='datetime')
+p.xaxis.axis_label = "Time"
+p.x_range.follow = "end"
+p.x_range.range_padding = 0
+p.toolbar.logo = None
+p.line(x='sc_ut', y='flight_pitch', line_color='blue', source=source, legend_label="Pitch")
+p.line(x='sc_ut', y='flight_heading', line_color='red', source = source, legend_label="Heading")
+p.line(x='sc_ut', y='flight_roll', line_color='green', source = source, legend_label="Roll")
+p.legend.click_policy = 'hide'
 
-# p2 = figure(tools=tools, x_axis_type='mercator', y_axis_type='mercator')
-# p2.xaxis.axis_label = "Longitude"
-# p2.yaxis.axis_label = "Latitude"
-# p2.toolbar.logo = None
-# p2.line(x='flight_longitude', y='flight_latitude', source=source)
+p2 = figure(tools=tools) #, x_axis_type='mercator', y_axis_type='mercator')
+p2.xaxis.axis_label = "Longitude"
+p2.yaxis.axis_label = "Latitude"
+p2.toolbar.logo = None
+p2.line(x='flight_longitude', y='flight_latitude', source=source)
 
 p3 = figure(tools=tools, x_axis_type='datetime')
 p3.xaxis.axis_label = "Time"
 p3.x_range.follow = "end"
 p3.x_range.range_padding = 0
 p3.toolbar.logo = None
-p3.line(x='sc_ut', y='flight_pitch', source=source, line_color='lightblue', legend_label="Pitch Error")
-p3.line(x='sc_ut', y='vessel_mass', source=source, line_color='orangered', legend_label="Heading Error")
+p3.line(x='sc_ut', y='autopilot_pitch_error', source=source, line_color='lightblue', legend_label="Pitch Error")
+p3.line(x='sc_ut', y='autopilot_heading_error', source=source, line_color='orangered', legend_label="Heading Error")
 p3.line(x='sc_ut', y='autopilot_roll_error', source=source, line_color='lightgreen', legend_label="Roll Error")
-p3.line(x='sc_ut', y='orbit_apoapsis', source=source, line_color='blue', legend_label="Pitch Target")
-# p3.line(x='sc_ut', y='autopilot_target_heading', source=source, line_color='red', legend_label="Heading Target")
-# p3.line(x='sc_ut', y='autopilot_target_roll', source=source, line_color='green', legend_label="Roll Target")
+p3.line(x='sc_ut', y='autopilot_target_pitch', source=source, line_color='blue', legend_label="Pitch Target")
+p3.line(x='sc_ut', y='autopilot_target_heading', source=source, line_color='red', legend_label="Heading Target")
+p3.line(x='sc_ut', y='autopilot_target_roll', source=source, line_color='green', legend_label="Roll Target")
 # p3.legend.location = "top_left"
 p3.legend.click_policy="hide"
-# print(df["autopilot_pitch_error"])
-# print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"])
-# print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"]())
-
 
 def update():
     df_new = update_streams()
@@ -124,6 +122,7 @@ curdoc().add_root(
     layout(
         [
             [p3],
+            [p, p2]
         ],
         sizing_mode="stretch_both",
     )
