@@ -135,8 +135,8 @@ class LoggableVessel(Loggable):
             'max_vacuum_thrust': self.attribute_template_ranf(1),
             'specific_impulse': self.attribute_template_ranf(1),
             'vacuum_specific_impulse': self.attribute_template_ranf(1),
-            'moment_of_inertia': self.attribute_template_ranf(1),
-            'inertia_tensor': self.attribute_template_ranf(1),
+            'moment_of_inertia': self.attribute_template_ranf(3),
+            # 'inertia_tensor': self.attribute_template_ranf(1),
             
         }
         Loggable.__init__(self, connection, loggable_object, name)

@@ -37,13 +37,14 @@ parser.add_argument(
     "-a",
     "--address",
     help="ip address",
-    type=string,
+    type=str,
     default="localhost"
 )
 args = parser.parse_args()
 
 simulate_krpc = args.simulate_krpc
 period = args.period
+address = args.address
 
 #########################
 # Set Up KRPC streaming #
@@ -67,7 +68,7 @@ else:
     space_center = conn.space_center
     vessel = space_center.active_vessel
     orbit = vessel.orbit
-    flight = vessel.flight(orbit.body.reference_frame)
+    flight = vessel.flight(vessel.orbital_reference_frame)
     autopilot = vessel.auto_pilot
 
 sc_logger = krpc_logger.LoggableSpaceCenter(conn, space_center, "sc")
@@ -80,51 +81,58 @@ loggable_list = [sc_logger, autopilot_logger, vessel_logger, orbit_logger, fligh
 def update_streams():
     dfs_new = [loggable.update() for loggable in loggable_list]
     df_new = pd.concat(dfs_new, axis=1)
-#     print(autopilot_logger.attribute_config["pitch_error"]["sim_fun"])
-    # for label, stream in zip(autopilot_logger.column_labels, autopilot_logger.stream_list): print(label, stream())
-    # print(df_new.autopilot_pitch_error.values, df_new.flight_pitch.values)
+    df_new.sc_ut = pd.to_timedelta(df_new.sc_ut, unit='s')
+    df_new.vessel_met = pd.to_timedelta(df_new.vessel_met, unit='s')
     return(df_new)
 
 ######################
 # Set up Bokeh plots #
 ######################
 df = update_streams()
+# df.sc_ut = pd.to_datetime(df.sc_ut, unit='s')
+# df.vessel_met = pd.to_timedelta(df.vessel_met, unit='s')
 source = ColumnDataSource(df)
 tools = "xpan,xwheel_zoom,xbox_zoom,reset"
 
 p = figure(tools=tools, x_axis_type='datetime')
 p.xaxis.axis_label = "Time"
 p.x_range.follow = "end"
+p.x_range.follow_interval = pd.Timedelta(10, unit='s')
 p.x_range.range_padding = 0
 p.toolbar.logo = None
-p.line(x='sc_ut', y='flight_pitch', line_color='blue', source=source, legend_label="Pitch")
-p.line(x='sc_ut', y='flight_heading', line_color='red', source = source, legend_label="Heading")
-p.line(x='sc_ut', y='flight_roll', line_color='green', source = source, legend_label="Roll")
+p.line(x='vessel_met', y='flight_pitch', line_color='blue', source=source, legend_label="Pitch")
+p.line(x='vessel_met', y='flight_heading', line_color='red', source = source, legend_label="Heading")
+p.line(x='vessel_met', y='flight_roll', line_color='green', source = source, legend_label="Roll")
+p.line(x='vessel_met', y='autopilot_target_pitch', source=source, line_color='lightblue', legend_label="Pitch Target")
+p.line(x='vessel_met', y='autopilot_target_heading', source=source, line_color='orangered', legend_label="Heading Target")
+p.line(x='vessel_met', y='autopilot_target_roll', source=source, line_color='lightgreen', legend_label="Roll Target")
 p.legend.click_policy = 'hide'
 
-p2 = figure(tools=tools) #, x_axis_type='mercator', y_axis_type='mercator')
+p2 = figure(x_range=(-180, 180), y_range=(-90,90)) #, x_axis_type='mercator', y_axis_type='mercator')
 p2.xaxis.axis_label = "Longitude"
 p2.yaxis.axis_label = "Latitude"
+# p2.x_range.follow = "end"
+# p2.x_range.range_padding = 0
+p2.x_range.bounds = (-180, 180)
+p2.y_range.bounds = (-90, 90)
 p2.toolbar.logo = None
-p2.line(x='flight_longitude', y='flight_latitude', source=source)
+p2.line(x='flight_longitude', y='flight_latitude', source=source, line_width=10, line_cap='square')
 
 p3 = figure(tools=tools, x_axis_type='datetime')
 p3.xaxis.axis_label = "Time"
 p3.x_range.follow = "end"
+p3.x_range.follow_interval = pd.Timedelta(10, unit='s')
 p3.x_range.range_padding = 0
 p3.toolbar.logo = None
-p3.line(x='sc_ut', y='autopilot_pitch_error', source=source, line_color='lightblue', legend_label="Pitch Error")
-p3.line(x='sc_ut', y='autopilot_heading_error', source=source, line_color='orangered', legend_label="Heading Error")
-p3.line(x='sc_ut', y='autopilot_roll_error', source=source, line_color='lightgreen', legend_label="Roll Error")
-p3.line(x='sc_ut', y='autopilot_target_pitch', source=source, line_color='blue', legend_label="Pitch Target")
-p3.line(x='sc_ut', y='autopilot_target_heading', source=source, line_color='red', legend_label="Heading Target")
-p3.line(x='sc_ut', y='autopilot_target_roll', source=source, line_color='green', legend_label="Roll Target")
-# p3.legend.location = "top_left"
+p3.line(x='vessel_met', y='autopilot_pitch_error', source=source, line_color='lightblue', legend_label="Pitch Error")
+p3.line(x='vessel_met', y='autopilot_heading_error', source=source, line_color='orangered', legend_label="Heading Error")
+p3.line(x='vessel_met', y='autopilot_roll_error', source=source, line_color='lightgreen', legend_label="Roll Error")
+
 p3.legend.click_policy="hide"
 
 def update():
     df_new = update_streams()
-    source.stream(df_new, 300)
+    source.stream(df_new, 10000)
 
 curdoc().add_root(
     layout(
