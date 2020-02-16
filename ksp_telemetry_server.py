@@ -32,6 +32,14 @@ parser.add_argument(
     type=float,
     default=1.0
 )
+
+parser.add_argument(
+    "-a",
+    "--address",
+    help="ip address",
+    type=string,
+    default="localhost"
+)
 args = parser.parse_args()
 
 simulate_krpc = args.simulate_krpc
@@ -55,7 +63,7 @@ if simulate_krpc:
     
 else:
     print("Setting up krpc connection")
-    conn = krpc.connect(name='ksp_telemetry_server')
+    conn = krpc.connect(name='ksp_telemetry_server', address=address)
     space_center = conn.space_center
     vessel = space_center.active_vessel
     orbit = vessel.orbit
