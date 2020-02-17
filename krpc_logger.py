@@ -31,6 +31,11 @@ class Loggable:
                 stream = config['sim_fun']
             else:
                 stream = self.connection.add_stream(*(config['stream_params'](self.loggable_object, attribute)))
+            
+            try:
+                dec = config['stream_decorator']
+                stream = dec(stream)
+            except KeyError: pass
             example_return = stream()
             base_label = "{}_{}".format(self.name, attribute)
             if type(example_return) is tuple:
@@ -144,7 +149,11 @@ class LoggableVessel(Loggable):
 class LoggableAutopilot(Loggable):
     def __init__(self, connection, loggable_object, name):
         self.attribute_config = {
-            'error': self.attribute_template_ranf(1),
+            'error': {
+                'sim_fun': np.random.ranf if (n is 1) else (lambda: tuple(np.random.ranf(n))),
+                'stream_params': self.stream_params_attribute,
+                'stream_decorator': self.ap_engaged_dec
+                }
             'pitch_error': self.attribute_template_ranf(1),
             'heading_error': self.attribute_template_ranf(1),
             'roll_error': self.attribute_template_ranf(1),
@@ -163,7 +172,16 @@ class LoggableAutopilot(Loggable):
             'yaw_pid_gains': self.attribute_template_ranf(3),
         }
         Loggable.__init__(self, connection, loggable_object, name)
-
+    
+    def ap_engaged_dec(self, stream_fun):
+        def stream():
+            try:
+                result = stream_fun()
+            except TODOERROR as e:
+                if e is "TODOSTR": return(None)
+                else: raise
+            return(result)
+        return(stream)
 class LoggableOrbit(Loggable):
     def __init__(self, connection, loggable_object, name):
         self.attribute_config = {

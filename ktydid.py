@@ -97,7 +97,7 @@ tools = "xpan,xwheel_zoom,xbox_zoom,reset"
 p = figure(tools=tools, x_axis_type='datetime')
 p.xaxis.axis_label = "Time"
 p.x_range.follow = "end"
-p.x_range.follow_interval = pd.Timedelta(10, unit='s')
+p.x_range.follow_interval = pd.Timedelta(30, unit='s')
 p.x_range.range_padding = 0
 p.toolbar.logo = None
 p.line(x='vessel_met', y='flight_pitch', line_color='blue', source=source, legend_label="Pitch")
@@ -144,3 +144,4 @@ curdoc().add_root(
     )
 )
 curdoc().add_periodic_callback(update, period*1000)
+curdoc().title = "KTyDID: Kerbal Telemetry Dashboard from ID"
