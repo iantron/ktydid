@@ -177,11 +177,12 @@ class LoggableAutopilot(Loggable):
         def stream():
             try:
                 result = stream_fun()
-            except TODOERROR as e:
-                if e is "TODOSTR": return(None)
-                else: raise
+            # except TODOERROR as e:
+                # if e is "TODOSTR": return(None)
+                # else: raise
             return(result)
         return(stream)
+        
 class LoggableOrbit(Loggable):
     def __init__(self, connection, loggable_object, name):
         self.attribute_config = {

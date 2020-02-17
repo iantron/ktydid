@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# A script to fetch streaming telemetry from KSP and plot it in a browser with bokeh and krpc
+# A script to fetch streaming telemetry from KSP and plot it on a browser dashboard.
 
 # Ian Dahlke, 2020
 
@@ -89,8 +89,6 @@ def update_streams():
 # Set up Bokeh plots #
 ######################
 df = update_streams()
-# df.sc_ut = pd.to_datetime(df.sc_ut, unit='s')
-# df.vessel_met = pd.to_timedelta(df.vessel_met, unit='s')
 source = ColumnDataSource(df)
 tools = "xpan,xwheel_zoom,xbox_zoom,reset"
 
@@ -108,11 +106,9 @@ p.line(x='vessel_met', y='autopilot_target_heading', source=source, line_color='
 p.line(x='vessel_met', y='autopilot_target_roll', source=source, line_color='lightgreen', legend_label="Roll Target")
 p.legend.click_policy = 'hide'
 
-p2 = figure(x_range=(-180, 180), y_range=(-90,90)) #, x_axis_type='mercator', y_axis_type='mercator')
+p2 = figure(x_range=(-180, 180), y_range=(-90,90))
 p2.xaxis.axis_label = "Longitude"
 p2.yaxis.axis_label = "Latitude"
-# p2.x_range.follow = "end"
-# p2.x_range.range_padding = 0
 p2.x_range.bounds = (-180, 180)
 p2.y_range.bounds = (-90, 90)
 p2.toolbar.logo = None
@@ -121,7 +117,7 @@ p2.line(x='flight_longitude', y='flight_latitude', source=source, line_width=10,
 p3 = figure(tools=tools, x_axis_type='datetime')
 p3.xaxis.axis_label = "Time"
 p3.x_range.follow = "end"
-p3.x_range.follow_interval = pd.Timedelta(10, unit='s')
+p3.x_range.follow_interval = pd.Timedelta(30, unit='s')
 p3.x_range.range_padding = 0
 p3.toolbar.logo = None
 p3.line(x='vessel_met', y='autopilot_pitch_error', source=source, line_color='lightblue', legend_label="Pitch Error")
