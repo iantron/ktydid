@@ -1,5 +1,0 @@
-{
-	"space_center": ["ui"],
-	"flight": ["mean_altitude"],
-	"orbit": ["apoapsis_altitude"]
-}
