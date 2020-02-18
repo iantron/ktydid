@@ -92,12 +92,13 @@ df = update_streams()
 source = ColumnDataSource(df)
 tools = "xpan,xwheel_zoom,xbox_zoom,reset"
 
-p = figure(tools=tools, x_axis_type='datetime')
+p = figure(tools=tools, x_axis_type='datetime', title="Vehicle Attitude")
 p.xaxis.axis_label = "Time"
 p.x_range.follow = "end"
 p.x_range.follow_interval = pd.Timedelta(30, unit='s')
 p.x_range.range_padding = 0
 p.toolbar.logo = None
+p.toolbar.autohide = True
 p.line(x='vessel_met', y='flight_pitch', line_color='blue', source=source, legend_label="Pitch")
 p.line(x='vessel_met', y='flight_heading', line_color='red', source = source, legend_label="Heading")
 p.line(x='vessel_met', y='flight_roll', line_color='green', source = source, legend_label="Roll")
@@ -106,20 +107,22 @@ p.line(x='vessel_met', y='autopilot_target_heading', source=source, line_color='
 p.line(x='vessel_met', y='autopilot_target_roll', source=source, line_color='lightgreen', legend_label="Roll Target")
 p.legend.click_policy = 'hide'
 
-p2 = figure(x_range=(-180, 180), y_range=(-90,90))
+p2 = figure(x_range=(-180, 180), y_range=(-90,90), title="Vehicle Ground Coordinates")
 p2.xaxis.axis_label = "Longitude"
 p2.yaxis.axis_label = "Latitude"
 p2.x_range.bounds = (-180, 180)
 p2.y_range.bounds = (-90, 90)
 p2.toolbar.logo = None
+p2.toolbar.autohide = True
 p2.line(x='flight_longitude', y='flight_latitude', source=source, line_width=10, line_cap='square')
 
-p3 = figure(tools=tools, x_axis_type='datetime')
+p3 = figure(tools=tools, x_axis_type='datetime', title="Autopilot Performance")
 p3.xaxis.axis_label = "Time"
 p3.x_range.follow = "end"
 p3.x_range.follow_interval = pd.Timedelta(30, unit='s')
 p3.x_range.range_padding = 0
 p3.toolbar.logo = None
+p3.toolbar.autohide = True
 p3.line(x='vessel_met', y='autopilot_pitch_error', source=source, line_color='lightblue', legend_label="Pitch Error")
 p3.line(x='vessel_met', y='autopilot_heading_error', source=source, line_color='orangered', legend_label="Heading Error")
 p3.line(x='vessel_met', y='autopilot_roll_error', source=source, line_color='lightgreen', legend_label="Roll Error")
